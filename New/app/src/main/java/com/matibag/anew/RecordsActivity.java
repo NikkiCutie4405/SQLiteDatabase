@@ -11,38 +11,38 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 public class RecordsActivity extends ListActivity {
-    public SQLiteDatabase Conn;
+    public DBHelper Conn;
     public Intent DispForm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-// TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
-        Conn=new SQLiteDatabase(this);
-        try{
+        Conn = new DBHelper(this);
+        try {
             ArrayList<String> Records = Conn.GetAllData();
-            if(Records.size()>0){
-                setListAdapter( new
-                        ArrayAdapter<String>(RecordsActivity.this,android.R.layout.simple_list_item_1,Records));
-            }else{
-                Toast.makeText(getApplicationContext(),"No Records Found!",
-                        Toast.LENGTH_SHORT).show();
+            if (Records != null && Records.size() > 0) {
+                setListAdapter(new ArrayAdapter<>(RecordsActivity.this, android.R.layout.simple_list_item_1, Records));
+            } else {
+                Toast.makeText(getApplicationContext(), "No Records Found!", Toast.LENGTH_SHORT).show();
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
         }
     }
+
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-// TODO Auto-generated method stub
         super.onListItemClick(l, v, position, id);
-        UpdateActivity.ID=Conn.RecordsId.get(position);
-        DispForm=new Intent("com.sqllite.app.UPDATEACTIVITY");
+        // Pass the record id to UpdateActivity via Intent extras (do not use static fields)
+        int recordId = Conn.RecordsId.get(position);
+        DispForm = new Intent(this, UpdateActivity.class);
+        DispForm.putExtra("record_id", recordId);
         startActivity(DispForm);
     }
+
     @Override
     protected void onPause() {
-// TODO Auto-generated method stub
         super.onPause();
         finish();
     }

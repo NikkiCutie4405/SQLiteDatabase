@@ -1,76 +1,82 @@
 package com.matibag.anew;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-public class MainActivity extends Activity {
-    public Intent DisplayForm; public SQLiteDatabase Conn;
+/**
+ * MainActivity: collects new record data and saves to DB
+ */
+public class MainActivity extends AppCompatActivity {
+    public Intent DisplayForm;
+    public DBHelper Conn;
     public EditText Fname, Mname, Lname, Address, Email;
-    public String FNAME=null, MNAME=null, LNAME=null,ADDRESS=null,EMAIL=null;
+    public String FNAME = null, MNAME = null, LNAME = null, ADDRESS = null, EMAIL = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Fname=(EditText)findViewById(R.id.Fname); Mname=(EditText)findViewById(R.id.Mname);
-        Lname=(EditText)findViewById(R.id.Lname); Address = (EditText)findViewById(R.id.Addre);
-        Email = (EditText)findViewById(R.id.Gmail);
+        Fname = findViewById(R.id.Fname);
+        Mname = findViewById(R.id.Mname);
+        Lname = findViewById(R.id.Lname);
+        Address = findViewById(R.id.Addre);
+        Email = findViewById(R.id.Gmail);
 
-        Conn=new SQLiteDatabase(this);
+        Conn = new DBHelper(this);
     }
-    public void AddRecord(View view){
-        FNAME=Fname.getText().toString();
-        MNAME=Mname.getText().toString();
-        LNAME=Lname.getText().toString();
-        ADDRESS=Address.getText().toString();
-        EMAIL=Email.getText().toString();
-        if (FNAME.equals("")){
+
+    public void AddRecord(View view) {
+        FNAME = Fname.getText().toString().trim();
+        MNAME = Mname.getText().toString().trim();
+        LNAME = Lname.getText().toString().trim();
+        ADDRESS = Address.getText().toString().trim();
+        EMAIL = Email.getText().toString().trim();
+
+        if (FNAME.isEmpty()) {
             Fname.setError("Please Enter Your First Name");
             Fname.requestFocus();
-        }
-        else if (MNAME.equals("")){
+        } else if (MNAME.isEmpty()) {
             Mname.setError("Please Enter Your Middle Name");
             Mname.requestFocus();
-        }
-        else if (LNAME.equals("")){
+        } else if (LNAME.isEmpty()) {
             Lname.setError("Please Enter Your Last Name");
             Lname.requestFocus();
-        }else if (ADDRESS.equals("")){
-            Address.setError("Please Enter Your Last Name");
+        } else if (ADDRESS.isEmpty()) {
+            Address.setError("Please Enter Your Address");
             Address.requestFocus();
-        }else if (EMAIL.equals("")){
-            Email.setError("Please Enter Your Last Name");
-            Lname.requestFocus();
-        }else {
-            if(Conn.AddRecords(FNAME, MNAME, LNAME)){
-                Fname.setText("");Mname.setText("");Lname.setText("");
+        } else if (EMAIL.isEmpty()) {
+            Email.setError("Please Enter Your Email");
+            Email.requestFocus();
+        } else {
+            boolean ok = Conn.AddRecords(FNAME, MNAME, LNAME, ADDRESS, EMAIL);
+            if (ok) {
+                Fname.setText("");
+                Mname.setText("");
+                Lname.setText("");
+                Address.setText("");
+                Email.setText("");
                 Toast.makeText(getApplicationContext(), "RECORD SAVED!", Toast.LENGTH_SHORT).show();
-            }else{
-                Toast.makeText(getApplicationContext(), "SAVING INFORMATION FAILED!",
-                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "SAVING INFORMATION FAILED!", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    public void ViewRecords(View view){
-        DisplayForm=new Intent("com.sqllite.app.RECORDSACTIVITY"); startActivity(DisplayForm);
+    public void ViewRecords(View view) {
+        DisplayForm = new Intent(this, RecordsActivity.class);
+        startActivity(DisplayForm);
     }
-    public void ClearRecords(View view){
-        try{
+
+    public void ClearRecords(View view) {
+        try {
             Conn.ClearRecord();
-            Toast.makeText(getApplicationContext(),"RECORDS CLEAR", Toast.LENGTH_SHORT).show();
-        }
-        catch(Exception e){
+            Toast.makeText(getApplicationContext(), "RECORDS CLEAR", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
         }
