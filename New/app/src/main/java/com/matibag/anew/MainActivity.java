@@ -2,6 +2,7 @@ package com.matibag.anew;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -40,30 +41,54 @@ public class MainActivity extends AppCompatActivity {
         if (FNAME.isEmpty()) {
             Fname.setError("Please Enter Your First Name");
             Fname.requestFocus();
-        } else if (MNAME.isEmpty()) {
+            return;
+        }
+        if (MNAME.isEmpty()) {
             Mname.setError("Please Enter Your Middle Name");
             Mname.requestFocus();
-        } else if (LNAME.isEmpty()) {
+            return;
+        }
+        if (LNAME.isEmpty()) {
             Lname.setError("Please Enter Your Last Name");
             Lname.requestFocus();
-        } else if (ADDRESS.isEmpty()) {
+            return;
+        }
+        if (ADDRESS.isEmpty()) {
             Address.setError("Please Enter Your Address");
             Address.requestFocus();
-        } else if (EMAIL.isEmpty()) {
+            return;
+        }
+        if (EMAIL.isEmpty()) {
             Email.setError("Please Enter Your Email");
             Email.requestFocus();
+            return;
+        }
+
+        // Validate email format
+        if (!Patterns.EMAIL_ADDRESS.matcher(EMAIL).matches()) {
+            Email.setError("Please enter a valid email address");
+            Email.requestFocus();
+            return;
+        }
+
+        // Check duplicate email before attempting insert
+        if (Conn.emailExists(EMAIL)) {
+            Email.setError("Email already exists");
+            Email.requestFocus();
+            Toast.makeText(getApplicationContext(), "A record with this email already exists.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        boolean ok = Conn.AddRecords(FNAME, MNAME, LNAME, ADDRESS, EMAIL);
+        if (ok) {
+            Fname.setText("");
+            Mname.setText("");
+            Lname.setText("");
+            Address.setText("");
+            Email.setText("");
+            Toast.makeText(getApplicationContext(), "RECORD SAVED!", Toast.LENGTH_SHORT).show();
         } else {
-            boolean ok = Conn.AddRecords(FNAME, MNAME, LNAME, ADDRESS, EMAIL);
-            if (ok) {
-                Fname.setText("");
-                Mname.setText("");
-                Lname.setText("");
-                Address.setText("");
-                Email.setText("");
-                Toast.makeText(getApplicationContext(), "RECORD SAVED!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getApplicationContext(), "SAVING INFORMATION FAILED!", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(getApplicationContext(), "SAVING INFORMATION FAILED!", Toast.LENGTH_SHORT).show();
         }
     }
 

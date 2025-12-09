@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -68,37 +69,61 @@ public class UpdateActivity extends Activity {
         if (FNAME.isEmpty()) {
             Fname.setError("Please Enter Your First Name");
             Fname.requestFocus();
-        } else if (MNAME.isEmpty()) {
+            return;
+        }
+        if (MNAME.isEmpty()) {
             Mname.setError("Please Enter Your Middle Name");
             Mname.requestFocus();
-        } else if (LNAME.isEmpty()) {
+            return;
+        }
+        if (LNAME.isEmpty()) {
             Lname.setError("Please Enter Your Last Name");
             Lname.requestFocus();
-        } else if (ADDRESS.isEmpty()) {
+            return;
+        }
+        if (ADDRESS.isEmpty()) {
             Address.setError("Please Enter Your Address");
             Address.requestFocus();
-        } else if (EMAIL.isEmpty()) {
+            return;
+        }
+        if (EMAIL.isEmpty()) {
             Email.setError("Please Enter Your Email");
             Email.requestFocus();
-        } else {
-            try {
-                boolean ok = Conn.UpdateRecords(FNAME, MNAME, LNAME, ADDRESS, EMAIL, recordId);
-                if (ok) {
-                    Fname.setText("");
-                    Mname.setText("");
-                    Lname.setText("");
-                    Address.setText("");
-                    Email.setText("");
-                    Toast.makeText(getApplicationContext(), "RECORD UPDATED!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "UPDATE FAILED!", Toast.LENGTH_SHORT).show();
-                }
-                DispForm = new Intent(this, RecordsActivity.class);
-                startActivity(DispForm);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(getApplicationContext(), "Error:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validate email format
+        if (!Patterns.EMAIL_ADDRESS.matcher(EMAIL).matches()) {
+            Email.setError("Please enter a valid email address");
+            Email.requestFocus();
+            return;
+        }
+
+        // Check duplicate email (exclude current record)
+        if (Conn.emailExistsExcludingId(EMAIL, recordId)) {
+            Email.setError("Email already exists");
+            Email.requestFocus();
+            Toast.makeText(getApplicationContext(), "Another record already uses this email.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            boolean ok = Conn.UpdateRecords(FNAME, MNAME, LNAME, ADDRESS, EMAIL, recordId);
+            if (ok) {
+                Fname.setText("");
+                Mname.setText("");
+                Lname.setText("");
+                Address.setText("");
+                Email.setText("");
+                Toast.makeText(getApplicationContext(), "RECORD UPDATED!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "UPDATE FAILED!", Toast.LENGTH_SHORT).show();
             }
+            DispForm = new Intent(this, RecordsActivity.class);
+            startActivity(DispForm);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), "Error:" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

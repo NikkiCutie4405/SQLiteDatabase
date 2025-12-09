@@ -44,7 +44,35 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(conn);
     }
 
+    public boolean emailExists(String email) {
+        SQLiteDatabase conn = this.getReadableDatabase();
+        Cursor c = null;
+        try {
+            c = conn.rawQuery("SELECT 1 FROM " + PROFILE + " WHERE " + PROFILE_EMAIL + " = ? LIMIT 1", new String[]{email});
+            return c != null && c.moveToFirst();
+        } finally {
+            if (c != null) c.close();
+            conn.close();
+        }
+    }
+
+    public boolean emailExistsExcludingId(String email, int id) {
+        SQLiteDatabase conn = this.getReadableDatabase();
+        Cursor c = null;
+        try {
+            c = conn.rawQuery("SELECT 1 FROM " + PROFILE + " WHERE " + PROFILE_EMAIL + " = ? AND " + PROFILE_ID + " != ? LIMIT 1",
+                    new String[]{email, String.valueOf(id)});
+            return c != null && c.moveToFirst();
+        } finally {
+            if (c != null) c.close();
+            conn.close();
+        }
+    }
+
     public boolean AddRecords(String fname, String mname, String lname, String address, String email) {
+        if (email == null) return false;
+        if (emailExists(email)) return false; // do not add duplicate emails
+
         SQLiteDatabase conn = this.getWritableDatabase();
         try {
             Values = new ContentValues();
@@ -64,6 +92,9 @@ public class DBHelper extends SQLiteOpenHelper {
      * Update names + address/email
      */
     public boolean UpdateRecords(String fname, String mname, String lname, String address, String email, Integer id) {
+        if (email == null) return false;
+        if (emailExistsExcludingId(email, id)) return false; // do not update to an email that already belongs to another record
+
         SQLiteDatabase conn = this.getWritableDatabase();
         try {
             ContentValues cv = new ContentValues();
